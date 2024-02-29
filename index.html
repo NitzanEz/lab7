@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="imageBrowserApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Browser</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        /* Add custom styles here */
+        .thumbnail {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            margin: 5px;
+            display: inline-block; /* Make thumbnails inline elements */
+        }
+
+        /* New style for the thumbnail container */
+        .thumbnail-container {
+            text-align: center; /* Center thumbnails horizontally */
+        }
+
+        .selected-image-container {
+            text-align: center; /* Center image horizontally */
+            margin-top: 20px; /* Add some space above the selected image */
+        }
+
+        .selected-image-container img {
+            max-width: 500px; /* Maximum width for the selected image */
+            max-height: 80vh; /* Maximum height to ensure it fits in most screens */
+            margin-top: 20px; /* Space above the image */
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center content vertically in a column */
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2 {
+            text-align: center; /* Centering headers */
+        }
+    </style>
+</head>
+<body ng-controller="ImageController">
+
+    <h1>Image Browser</h1>
+
+    <div class="thumbnail-container">
+        <!-- Thumbnails -->
+        <img ng-repeat="image in images" ng-src="{{image.thumbnail}}" class="thumbnail" ng-click="selectImage(image.full)">
+    </div>
+
+    <div ng-show="selectedImage" class="selected-image-container">
+        <!-- Selected Image -->
+        <h2>Selected Image</h2>
+        <img ng-src="{{selectedImage}}" alt="Selected Image">
+    </div>
+
+    <script>
+        angular.module('imageBrowserApp', [])
+            .controller('ImageController', ['$scope', '$http', function($scope, $http) {
+                $scope.images = [];
+                $scope.selectedImage = null;
+                var limit = 15; // Limit the number of pictures to fetch
+
+                // Fetch images from the API
+                $http.get('https://picsum.photos/v2/list?limit=' + limit)
+                    .then(function(response) {
+                        // Extracting image data from response
+                        $scope.images = response.data.map(function(item) {
+                            return {
+                                thumbnail: `https://picsum.photos/100/100?image=${item.id}`,
+                                full: `https://picsum.photos/${item.width}/${item.height}?image=${item.id}`
+                            };
+                        });
+                    }, function(error) {
+                        console.error('Error fetching images:', error);
+                    });
+
+                // Function to select an image
+                $scope.selectImage = function(imageUrl) {
+                    $scope.selectedImage = imageUrl;
+                };
+            }]);
+    </script>
+</body>
+</html>
